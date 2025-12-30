@@ -23,4 +23,14 @@ public class PredioController {
         Predio nuevoPredio = predioService.registrarNuevoPredio(dto);
         return new ResponseEntity<>(nuevoPredio, HttpStatus.CREATED);
     }
+
+    @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO', 'CATASTRO')")
+    @GetMapping("/cercanos")
+    public ResponseEntity<java.util.List<Predio>> buscarCercanos(
+            @RequestParam double lat,
+            @RequestParam double lon,
+            @RequestParam(defaultValue = "500") double distancia) {
+
+        return ResponseEntity.ok(predioService.buscarPorCercania(lat, lon, distancia));
+    }
 }

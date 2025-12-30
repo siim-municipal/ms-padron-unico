@@ -25,4 +25,20 @@ public interface PredioRepository extends JpaRepository<Predio, UUID> {
     List<Predio> findByColoniaBarrio(String colonia);
 
     boolean existsByClaveCatastral(String claveCatastral);
+
+    // Busca predios dentro de un radio de 'metros' desde un punto (lon, lat)
+    @Query(value = """
+        SELECT * FROM tuxtepec.predios 
+        WHERE ubicacion_centro IS NOT NULL 
+        AND ST_DWithin(
+            ubicacion_centro::geography, 
+            ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography, 
+            :metros
+        )
+        """, nativeQuery = true)
+    List<Predio> buscarCercanos(
+            @Param("lon") double longitud,
+            @Param("lat") double latitud,
+            @Param("metros") double metros
+    );
 }

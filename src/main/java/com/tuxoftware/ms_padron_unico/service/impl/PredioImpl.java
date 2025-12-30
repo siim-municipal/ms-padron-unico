@@ -10,9 +10,12 @@ import com.tuxoftware.ms_padron_unico.persistence.repository.PropiedadPredioRepo
 import com.tuxoftware.ms_padron_unico.persistence.repository.SujetoPasivoRepository;
 import com.tuxoftware.ms_padron_unico.service.PredioService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -48,5 +51,11 @@ public class PredioImpl implements PredioService {
         propiedadPredioRepository.save(relacion);
 
         return predioGuardado;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Predio> buscarPorCercania(double lat, double lon, double radioMetros) {
+        return predioRepository.buscarCercanos(lon, lat, radioMetros);
     }
 }
