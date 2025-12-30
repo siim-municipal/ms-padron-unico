@@ -1,0 +1,155 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="001-extensions" author="Hugo Cobos">
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;
+            CREATE EXTENSION IF NOT EXISTS "postgis" SCHEMA public;
+        </sql>
+    </changeSet>
+
+    <changeSet id="002-configurar-search-path" author="Hugo Cobos">
+        <sql>
+            -- Esto le dice a la BD: "Si no encuentras algo en el schema actual, búscalo en public"
+            -- Se aplica a nivel usuario de base de datos, así no depende de la URL de Java.
+            ALTER ROLE "postgres" SET search_path TO "$user", public, postgis;
+        </sql>
+    </changeSet>
+
+    <changeSet id="003-enums" author="Hugo Cobos">
+        <sql>
+            DO $$ BEGIN
+            CREATE TYPE tipo_persona_enum AS ENUM ('FISICA', 'MORAL', 'OFICIAL');
+            CREATE TYPE tipo_predio_enum AS ENUM ('URBANO', 'RUSTICO', 'EJIDAL');
+            CREATE TYPE estatus_registro_enum AS ENUM ('ACTIVO', 'BAJA', 'SUSPENDIDO');
+            EXCEPTION
+                WHEN duplicate_object THEN null;
+            END $$;
+        </sql>
+    </changeSet>
+
+    <changeSet id="004-create-sujetos-pasivos" author="Hugo Cobos">
+        <createTable tableName="sujetos_pasivos">
+            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tipo_persona" type="tipo_persona_enum">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rfc" type="VARCHAR(13)">
+                <constraints unique="true"/>
+            </column>
+            <column name="curp" type="VARCHAR(18)"/>
+            <column name="nombre_razon_social" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="apellido_paterno" type="VARCHAR(100)"/>
+            <column name="apellido_materno" type="VARCHAR(100)"/>
+            <column name="email" type="VARCHAR(150)"/>
+            <column name="telefono_movil" type="VARCHAR(20)"/>
+            <column name="direccion_fiscal" type="TEXT"/>
+            <column name="estatus" type="estatus_registro_enum" defaultValue="ACTIVO"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <createIndex tableName="sujetos_pasivos" indexName="idx_sujetos_nombre">
+            <column name="nombre_razon_social"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="005-create-predios" author="Hugo Cobos">
+        <createTable tableName="predios">
+            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="clave_catastral" type="VARCHAR(30)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="clave_anterior" type="VARCHAR(30)"/>
+            <column name="cuenta_predial" type="VARCHAR(20)"/>
+            <column name="tipo_predio" type="tipo_predio_enum">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uso_suelo" type="VARCHAR(50)"/>
+            <column name="valor_catastral" type="NUMERIC(18, 2)" defaultValue="0.00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="area_terreno_m2" type="NUMERIC(12, 4)" defaultValue="0.00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="area_construccion_m2" type="NUMERIC(12, 4)" defaultValue="0.00">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="estatus" type="estatus_registro_enum" defaultValue="ACTIVO"/>
+
+            <column name="ubicacion_centro" type="GEOMETRY(POINT, 4326)"/>
+            <column name="poligono_limite" type="GEOMETRY(MULTIPOLYGON, 4326)"/>
+
+            <column name="calle" type="VARCHAR(150)"/>
+            <column name="numero_exterior" type="VARCHAR(20)"/>
+            <column name="numero_interior" type="VARCHAR(20)"/>
+            <column name="colonia_barrio" type="VARCHAR(100)"/>
+            <column name="codigo_postal" type="VARCHAR(5)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <sql>
+            CREATE INDEX idx_predios_geom ON predios USING GIST (poligono_limite);
+        </sql>
+    </changeSet>
+
+    <changeSet id="006-create-propiedad-predios" author="Hugo Cobos">
+        <createTable tableName="propiedad_predios">
+            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="sujeto_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_prop_sujeto" references="sujetos_pasivos(id)"/>
+            </column>
+            <column name="predio_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_prop_predio" references="predios(id)"/>
+            </column>
+            <column name="tipo_relacion" type="VARCHAR(50)" defaultValue="PROPIETARIO"/>
+            <column name="porcentaje_propiedad" type="NUMERIC(5, 2)" defaultValue="100.00"/>
+            <column name="es_responsable_pago" type="BOOLEAN" defaultValue="true"/>
+            <column name="fecha_escrituracion" type="DATE"/>
+            <column name="numero_escritura" type="VARCHAR(50)"/>
+        </createTable>
+
+        <addUniqueConstraint tableName="propiedad_predios" columnNames="sujeto_id, predio_id" constraintName="uq_sujeto_predio"/>
+    </changeSet>
+
+    <changeSet id="007-create-puestos-ambulantes" author="Hugo Cobos">
+        <createTable tableName="puestos_ambulantes">
+            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="sujeto_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_amb_sujeto" references="sujetos_pasivos(id)"/>
+            </column>
+            <column name="giro_comercial" type="VARCHAR(100)"/>
+            <column name="dimensiones_m2" type="NUMERIC(10, 2)"/>
+            <column name="dias_operacion" type="VARCHAR(7)"/>
+
+            <column name="ubicacion_actual" type="GEOMETRY(POINT, 4326)"/>
+            <column name="referencia_ubicacion" type="TEXT"/>
+
+            <column name="estatus" type="estatus_registro_enum" defaultValue="ACTIVO"/>
+
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+
+            <column name="ultimo_pago_fecha" type="DATE"/>
+        </createTable>
+
+        <sql>
+            CREATE INDEX idx_ambulantes_geom ON puestos_ambulantes USING GIST (ubicacion_actual);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
