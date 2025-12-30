@@ -40,11 +40,20 @@ public class RegistroPredioDTO {
 
     @DecimalMin("0.01")
     @DecimalMax("100.00")
-    private BigDecimal porcentajePropiedad; // Ej: 100.00 si es único dueño
+    private BigDecimal porcentajePropiedad; // Ej.: 100.00 si es único dueño
 
     private String tipoRelacion; // "PROPIETARIO" o "POSEEDOR"
 
     private Boolean esResponsablePago; // true por defecto
 
     private String numeroEscritura;
+
+    // COORDENADAS (Opcionales, por si el predio no está geolocalizado aún)
+    @DecimalMin("-90.0")
+    @DecimalMax("90.0")
+    private Double latitud;
+
+    @DecimalMin("-180.0")
+    @DecimalMax("180.0")
+    private Double longitud;
 }

@@ -83,9 +83,9 @@
 			<version>1.19.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.bedatadriven</groupId>
+			<groupId>org.n52.jackson</groupId>
 			<artifactId>jackson-datatype-jts</artifactId>
-			<version>2.4</version>
+			<version>1.2.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
