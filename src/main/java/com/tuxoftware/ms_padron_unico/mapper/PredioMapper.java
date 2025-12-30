@@ -4,33 +4,53 @@ import com.tuxoftware.ms_padron_unico.dto.RegistroPredioDTO;
 import com.tuxoftware.ms_padron_unico.persistence.entity.Predio;
 import com.tuxoftware.ms_padron_unico.persistence.entity.PropiedadPredio;
 import com.tuxoftware.ms_padron_unico.persistence.entity.SujetoPasivo;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Mapper(
-        componentModel = "spring", // Permite inyectarlo con @Autowired
-        unmappedTargetPolicy = ReportingPolicy.IGNORE, // Ignora campos que no coincidan (id, auditoría)
-        imports = {LocalDate.class, BigDecimal.class} // Para usar en expressions
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        imports = {LocalDate.class, BigDecimal.class}
 )
 public interface PredioMapper {
-    // 1. Mapeo de DTO a Entidad Predio
-    // Los campos con el mismo nombre se mapean solos (calle, claveCatastral, etc.)
+
+    // 1. Mapeo principal
+    @Mapping(target = "ubicacionCentro", source = "dto", qualifiedByName = "mapCoordinatesToPoint")
     Predio toPredioEntity(RegistroPredioDTO dto);
 
-    // 2. Mapeo de DTO a Relación PropiedadPredio
-    // Necesitamos pasar el DTO, el Sujeto ya buscado y el Predio ya guardado
-    @Mapping(target = "id", ignore = true) // Se genera automático
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "sujeto", source = "sujeto")
     @Mapping(target = "predio", source = "predio")
-    // Valores por defecto si vienen nulos en el DTO
     @Mapping(target = "tipoRelacion", source = "dto.tipoRelacion", defaultValue = "PROPIETARIO")
     @Mapping(target = "porcentajePropiedad", source = "dto.porcentajePropiedad", defaultValue = "100.00")
     @Mapping(target = "esResponsablePago", source = "dto.esResponsablePago", defaultValue = "true")
-    // Lógica para fecha actual
     @Mapping(target = "fechaEscrituracion", expression = "java(LocalDate.now())")
     PropiedadPredio toRelacionEntity(RegistroPredioDTO dto, SujetoPasivo sujeto, Predio predio);
+
+    // LÓGICA GEOESPACIAL PERSONALIZADA
+
+    @Named("mapCoordinatesToPoint")
+    default Point mapCoordinatesToPoint(RegistroPredioDTO dto) {
+        if (dto.getLatitud() == null || dto.getLongitud() == null) {
+            return null; // Si no mandan coordenadas, guardamos null
+        }
+
+        // Crear la factoría con SRID 4326 (WGS84 - GPS Estándar)
+        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+
+        // El orden estándar en GIS es (X, Y) -> (Longitud, Latitud)
+        // Latitud = Y, Longitud = X
+        Coordinate coordinate = new Coordinate(dto.getLongitud(), dto.getLatitud());
+
+        return geometryFactory.createPoint(coordinate);
+    }
 }
