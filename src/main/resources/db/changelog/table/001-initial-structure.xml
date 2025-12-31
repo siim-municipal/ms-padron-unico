@@ -3,14 +3,36 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
 
-    <changeSet id="001-extensions" author="Hugo Cobos">
+    <property name="schema_name" value="TUXTEPEC"/>
+
+    <property name="type_persona_enum" value="tipo_persona_enum" dbms="postgresql"/>
+    <property name="type_predio_enum" value="tipo_predio_enum" dbms="postgresql"/>
+    <property name="type_estatus_enum" value="estatus_registro_enum" dbms="postgresql"/>
+
+    <property name="type_persona_enum" value="VARCHAR(50)" dbms="h2"/>
+    <property name="type_predio_enum" value="VARCHAR(50)" dbms="h2"/>
+    <property name="type_estatus_enum" value="VARCHAR(50)" dbms="h2"/>
+
+    <property name="uuid_function" value="uuid_generate_v4()" dbms="postgresql"/>
+    <property name="uuid_function" value="random_uuid()" dbms="h2"/>
+
+    <property name="text_type" value="TEXT" dbms="postgresql"/>
+    <property name="text_type" value="VARCHAR" dbms="h2"/>
+
+    <changeSet id="000-init-h2-geo" author="system" dbms="h2">
+        <sql>
+            CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL FOR "org.h2.util.StringUtils.quoteStringSQL";
+        </sql>
+    </changeSet>
+
+    <changeSet id="001-extensions" author="Hugo Cobos" dbms="postgresql">
         <sql>
             CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;
             CREATE EXTENSION IF NOT EXISTS "postgis" SCHEMA public;
         </sql>
     </changeSet>
 
-    <changeSet id="002-configurar-search-path" author="Hugo Cobos">
+    <changeSet id="002-configurar-search-path" author="Hugo Cobos" dbms="postgresql">
         <sql>
             -- Esto le dice a la BD: "Si no encuentras algo en el schema actual, búscalo en public"
             -- Se aplica a nivel usuario de base de datos, así no depende de la URL de Java.
@@ -18,7 +40,7 @@
         </sql>
     </changeSet>
 
-    <changeSet id="003-enums" author="Hugo Cobos">
+    <changeSet id="003-enums" author="Hugo Cobos" dbms="postgresql">
         <sql>
             DO $$ BEGIN
             CREATE TYPE tipo_persona_enum AS ENUM ('FISICA', 'MORAL', 'OFICIAL');
@@ -32,10 +54,10 @@
 
     <changeSet id="004-create-sujetos-pasivos" author="Hugo Cobos">
         <createTable tableName="sujetos_pasivos">
-            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+            <column name="id" type="UUID" defaultValueComputed="${uuid_function}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="tipo_persona" type="tipo_persona_enum">
+            <column name="tipo_persona" type="${type_persona_enum}">
                 <constraints nullable="false"/>
             </column>
             <column name="rfc" type="VARCHAR(13)">
@@ -49,8 +71,8 @@
             <column name="apellido_materno" type="VARCHAR(100)"/>
             <column name="email" type="VARCHAR(150)"/>
             <column name="telefono_movil" type="VARCHAR(20)"/>
-            <column name="direccion_fiscal" type="TEXT"/>
-            <column name="estatus" type="estatus_registro_enum" defaultValue="ACTIVO"/>
+            <column name="direccion_fiscal" type="${text_type}"/>
+            <column name="estatus" type="${type_estatus_enum}" defaultValue="ACTIVO"/>
             <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
@@ -62,7 +84,7 @@
 
     <changeSet id="005-create-predios" author="Hugo Cobos">
         <createTable tableName="predios">
-            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+            <column name="id" type="UUID" defaultValueComputed="${uuid_function}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="clave_catastral" type="VARCHAR(30)">
@@ -70,7 +92,7 @@
             </column>
             <column name="clave_anterior" type="VARCHAR(30)"/>
             <column name="cuenta_predial" type="VARCHAR(20)"/>
-            <column name="tipo_predio" type="tipo_predio_enum">
+            <column name="tipo_predio" type="${type_predio_enum}">
                 <constraints nullable="false"/>
             </column>
             <column name="uso_suelo" type="VARCHAR(50)"/>
@@ -84,7 +106,7 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="estatus" type="estatus_registro_enum" defaultValue="ACTIVO"/>
+            <column name="estatus" type="${type_estatus_enum}" defaultValue="ACTIVO"/>
 
             <column name="ubicacion_centro" type="GEOMETRY(POINT, 4326)"/>
             <column name="poligono_limite" type="GEOMETRY(MULTIPOLYGON, 4326)"/>
@@ -98,14 +120,18 @@
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
 
-        <sql>
+        <sql dbms="postgresql">
             CREATE INDEX idx_predios_geom ON predios USING GIST (poligono_limite);
+        </sql>
+
+        <sql dbms="h2">
+            CREATE SPATIAL INDEX idx_predios_geom ON ${schema_name}.predios(poligono_limite);
         </sql>
     </changeSet>
 
     <changeSet id="006-create-propiedad-predios" author="Hugo Cobos">
         <createTable tableName="propiedad_predios">
-            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+            <column name="id" type="UUID" defaultValueComputed="${uuid_function}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="sujeto_id" type="UUID">
@@ -126,7 +152,7 @@
 
     <changeSet id="007-create-puestos-ambulantes" author="Hugo Cobos">
         <createTable tableName="puestos_ambulantes">
-            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+            <column name="id" type="UUID" defaultValueComputed="${uuid_function}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="sujeto_id" type="UUID">
@@ -137,9 +163,9 @@
             <column name="dias_operacion" type="VARCHAR(7)"/>
 
             <column name="ubicacion_actual" type="GEOMETRY(POINT, 4326)"/>
-            <column name="referencia_ubicacion" type="TEXT"/>
+            <column name="referencia_ubicacion" type="${text_type}"/>
 
-            <column name="estatus" type="estatus_registro_enum" defaultValue="ACTIVO"/>
+            <column name="estatus" type="${type_estatus_enum}" defaultValue="ACTIVO"/>
 
             <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
@@ -147,8 +173,12 @@
             <column name="ultimo_pago_fecha" type="DATE"/>
         </createTable>
 
-        <sql>
+        <sql dbms="postgresql">
             CREATE INDEX idx_ambulantes_geom ON puestos_ambulantes USING GIST (ubicacion_actual);
+        </sql>
+
+        <sql dbms="h2">
+            CREATE SPATIAL INDEX idx_ambulantes_geom ON ${schema_name}.puestos_ambulantes(ubicacion_actual);
         </sql>
     </changeSet>
 

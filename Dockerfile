@@ -26,13 +26,13 @@ USER appuser
 
 WORKDIR /app
 
-# Copiamos SOLO el jar compilado desde la Etapa 1
-# Nota: El nombre del jar puede variar, usamos un wildcard o el nombre específico
-COPY --from=build /app/target/*.jar app.war
+# Copiamos SOLO el war compilado desde la Etapa 1
+# Nota: El nombre del war puede variar, usamos un wildcard o el nombre específico
+COPY --from=build /app/target/*.war app.war
 
 EXPOSE 8080
 
 # Configuración de JVM para contenedores (detecta RAM disponible automáticamente)
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.war"]

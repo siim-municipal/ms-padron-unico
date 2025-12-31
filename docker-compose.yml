@@ -40,4 +40,5 @@ services:
 # Definimos la red
 networks:
   siim-network:
-    driver: bridge
+    name: siim-global-net
+    external: true
