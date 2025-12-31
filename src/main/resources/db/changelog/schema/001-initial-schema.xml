@@ -6,7 +6,13 @@
         http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
 
-    <changeSet id="create-schema-tuxtepec" author="hugo cobos">
+    <changeSet id="000-init-schema" author="Hugo Cobos" dbms="h2">
+        <sql>
+            CREATE SCHEMA IF NOT EXISTS "TUXTEPEC";
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-schema-tuxtepec" author="hugo cobos" dbms="postgresql">
         <preConditions onFail="MARK_RAN" onError="HALT">
             <not>
                 <sqlCheck expectedResult="1">
