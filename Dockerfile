@@ -28,7 +28,7 @@ WORKDIR /app
 
 # Copiamos SOLO el jar compilado desde la Etapa 1
 # Nota: El nombre del jar puede variar, usamos un wildcard o el nombre específico
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.war
 
 EXPOSE 8080
 
