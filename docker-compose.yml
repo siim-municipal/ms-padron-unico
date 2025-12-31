@@ -14,7 +14,7 @@ services:
     # Puertos: Mapeamos el interno 8080.
     # Dokploy se encargará de exponerlo al mundo vía Traefik si lo configuras en "Domains"
     ports:
-      - "8080:8080"
+      - "8081:8080"
 
     # Variables de Entorno
     # NO pongas contraseñas reales aquí. Usa la sintaxis ${VAR}
