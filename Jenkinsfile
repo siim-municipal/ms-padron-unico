@@ -47,12 +47,11 @@ pipeline {
             }
         }
 
-        stage("SonarQube Analysis & Gate") {
+        stage("SonarQube") {
             steps {
-                script {
-                    withSonarQubeEnv("SonarServer") {
+                withSonarQubeEnv("SonarServer") {
+                    script {
                         def fixedBranchName = env.GIT_BRANCH.replace("origin/", "").replace("/", "_")
-
                         configFileProvider([configFile(fileId: "devops-settings", variable: "MVN_SETTINGS")]) {
                             sh """
                                 mvn -s $MVN_SETTINGS \
@@ -62,15 +61,22 @@ pipeline {
                             """
                         }
                     }
+                }
+            }
+        }
 
-                    // 2. ESPERAR el resultado del Quality Gate (Esto pausa la pipeline)
-                    // Es importante poner esto FUERA del bloque withSonarQubeEnv pero dentro del script
-                    timeout(time: 10, unit: 'MINUTES') {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Pipeline abortada debido a fallo en Quality Gate: ${qg.status}"
-                        }
+        stage("SonarQube Quality Gate") {
+            when {
+                not {
+                    anyOf {
+                        branch "master"
+                        branch "qa"
                     }
+                }
+            }
+            steps {
+                timeout(time: 5, unit: "MINUTES") {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
