@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    // hook local para preguntar a git si hay cambios
+    triggers {
+            // H/2 significa: "Revisa cada 2 minutos si hay cambios en Git"
+            pollSCM('H/2 * * * *')
+        }
+
     tools {
       jdk 'openjdk-21.0.3'
       maven 'maven3'
