@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   ms-padron:
     # Build: usa el Dockerfile del directorio actual
@@ -32,7 +30,7 @@ services:
       - ISSUER_URI_PADRON=${ISSUER_URI_PADRON}
       - JWK_SET_URI_PADRON=${JWK_SET_URI_PADRON}
       # PostGIS y Hibernate
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
 
     # Configuración de red (opcional, pero buena práctica)
