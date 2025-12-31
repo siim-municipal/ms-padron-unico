@@ -52,8 +52,14 @@ pipeline {
                 withSonarQubeEnv("SonarServer") {
                     script {
                         def fixedBranchName = env.GIT_BRANCH.replace("origin/", "").replace("/", "_")
+
                         configFileProvider([configFile(fileId: "devops-settings", variable: "MVN_SETTINGS")]) {
-                            sh "mvn -s $MVN_SETTINGS sonar:sonar -Dsonar.projectName=$pkgName:" + fixedBranchName + " -Dsonar.projectKey=$pkgName:" + fixedBranchName
+                            sh """
+                                mvn -s $MVN_SETTINGS \
+                                org.sonarsource.scanner.maven:sonar-maven-plugin:3.11.0.3922:sonar \
+                                -Dsonar.projectName=${pkgName}:${fixedBranchName} \
+                                -Dsonar.projectKey=${pkgName}:${fixedBranchName}
+                            """
                         }
                     }
                 }
