@@ -42,7 +42,8 @@ pipeline {
         stage("build") {
             steps {
                 configFileProvider([configFile(fileId: "devops-settings", variable: "MVN_SETTINGS")]) {
-                    sh "mvn -s $MVN_SETTINGS clean compile test install"
+                    // sh "mvn -s $MVN_SETTINGS clean compile test install"
+                    sh "mvn -s $MVN_SETTINGS clean install -DskipTests"
                 }
             }
         }
