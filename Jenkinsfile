@@ -25,7 +25,7 @@ pipeline {
         stage("init") {
             steps {
                 echo "Procesando rama ${env.GIT_BRANCH}"
-                echo "Notificando inicio de build..."
+                githubNotify description: 'Compilando el proyecto...', status: 'PENDING', context: 'Jenkins/Build'
                 script {
                     pom = readMavenPom file: "pom.xml"
                     pkgName = pom.artifactId
@@ -104,10 +104,10 @@ pipeline {
             deleteDir()
         }
         success {
-            echo "Notificando SUCCESSFULL"
+            githubNotify description: 'Build exitoso', status: 'SUCCESS', context: 'Jenkins/Build'
         }
         unsuccessful {
-            echo "Notificando FAILED"
+            githubNotify description: 'Build fallido', status: 'FAILURE', context: 'Jenkins/Build'
         }
     }
 
