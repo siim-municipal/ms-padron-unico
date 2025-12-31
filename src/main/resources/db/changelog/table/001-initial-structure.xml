@@ -3,7 +3,14 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
 
-    <changeSet id="001-extensions" author="Hugo Cobos">
+    <changeSet id="000-init-h2-geo" author="system" dbms="h2">
+        <sql>
+            CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL FOR "org.h2.util.StringUtils.quoteStringSQL";
+            CREATE DOMAIN IF NOT EXISTS geometry AS VARCHAR;
+        </sql>
+    </changeSet>
+
+    <changeSet id="001-extensions" author="Hugo Cobos" dbms="postgresql">
         <sql>
             CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;
             CREATE EXTENSION IF NOT EXISTS "postgis" SCHEMA public;
