@@ -3,6 +3,8 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
 
+    <property name="schema_name" value="TUXTEPEC"/>
+
     <property name="type_persona_enum" value="tipo_persona_enum" dbms="postgresql"/>
     <property name="type_predio_enum" value="tipo_predio_enum" dbms="postgresql"/>
     <property name="type_estatus_enum" value="estatus_registro_enum" dbms="postgresql"/>
@@ -13,6 +15,9 @@
 
     <property name="uuid_function" value="uuid_generate_v4()" dbms="postgresql"/>
     <property name="uuid_function" value="random_uuid()" dbms="h2"/>
+
+    <property name="text_type" value="TEXT" dbms="postgresql"/>
+    <property name="text_type" value="VARCHAR" dbms="h2"/>
 
     <changeSet id="000-init-h2-geo" author="system" dbms="h2">
         <sql>
@@ -66,7 +71,7 @@
             <column name="apellido_materno" type="VARCHAR(100)"/>
             <column name="email" type="VARCHAR(150)"/>
             <column name="telefono_movil" type="VARCHAR(20)"/>
-            <column name="direccion_fiscal" type="TEXT"/>
+            <column name="direccion_fiscal" type="${text_type}"/>
             <column name="estatus" type="${type_estatus_enum}" defaultValue="ACTIVO"/>
             <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
@@ -115,8 +120,12 @@
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
 
-        <sql>
+        <sql dbms="postgresql">
             CREATE INDEX idx_predios_geom ON predios USING GIST (poligono_limite);
+        </sql>
+
+        <sql dbms="h2">
+            CREATE SPATIAL INDEX idx_predios_geom ON ${schema_name}.predios(poligono_limite);
         </sql>
     </changeSet>
 
@@ -154,7 +163,7 @@
             <column name="dias_operacion" type="VARCHAR(7)"/>
 
             <column name="ubicacion_actual" type="GEOMETRY(POINT, 4326)"/>
-            <column name="referencia_ubicacion" type="TEXT"/>
+            <column name="referencia_ubicacion" type="${text_type}"/>
 
             <column name="estatus" type="${type_estatus_enum}" defaultValue="ACTIVO"/>
 
@@ -164,8 +173,12 @@
             <column name="ultimo_pago_fecha" type="DATE"/>
         </createTable>
 
-        <sql>
+        <sql dbms="postgresql">
             CREATE INDEX idx_ambulantes_geom ON puestos_ambulantes USING GIST (ubicacion_actual);
+        </sql>
+
+        <sql dbms="h2">
+            CREATE SPATIAL INDEX idx_ambulantes_geom ON ${schema_name}.puestos_ambulantes(ubicacion_actual);
         </sql>
     </changeSet>
 
