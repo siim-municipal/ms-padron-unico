@@ -8,22 +8,8 @@
     <property name="type_persona_enum" value="tipo_persona_enum" dbms="postgresql"/>
     <property name="type_predio_enum" value="tipo_predio_enum" dbms="postgresql"/>
     <property name="type_estatus_enum" value="estatus_registro_enum" dbms="postgresql"/>
-
-    <property name="type_persona_enum" value="VARCHAR(50)" dbms="h2"/>
-    <property name="type_predio_enum" value="VARCHAR(50)" dbms="h2"/>
-    <property name="type_estatus_enum" value="VARCHAR(50)" dbms="h2"/>
-
     <property name="uuid_function" value="uuid_generate_v4()" dbms="postgresql"/>
-    <property name="uuid_function" value="random_uuid()" dbms="h2"/>
-
     <property name="text_type" value="TEXT" dbms="postgresql"/>
-    <property name="text_type" value="VARCHAR" dbms="h2"/>
-
-    <changeSet id="000-init-h2-geo" author="Hugo Cobos" dbms="h2">
-        <sql>
-            CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL FOR "org.h2.util.StringUtils.quoteStringSQL";
-        </sql>
-    </changeSet>
 
     <changeSet id="001-extensions" author="Hugo Cobos" dbms="postgresql">
         <sql>
@@ -123,10 +109,6 @@
         <sql dbms="postgresql">
             CREATE INDEX idx_predios_geom ON predios USING GIST (poligono_limite);
         </sql>
-
-        <sql dbms="h2">
-            CREATE SPATIAL INDEX idx_predios_geom ON ${schema_name}.predios(poligono_limite);
-        </sql>
     </changeSet>
 
     <changeSet id="006-create-propiedad-predios" author="Hugo Cobos">
@@ -176,10 +158,48 @@
         <sql dbms="postgresql">
             CREATE INDEX idx_ambulantes_geom ON puestos_ambulantes USING GIST (ubicacion_actual);
         </sql>
+    </changeSet>
 
-        <sql dbms="h2">
-            CREATE SPATIAL INDEX idx_ambulantes_geom ON ${schema_name}.puestos_ambulantes(ubicacion_actual);
-        </sql>
+    <changeSet id="008-crear-tabla-licencias-comerciales" author="Hugo Cobos">
+        <createTable tableName="licencias_comerciales">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="estatus" type="VARCHAR(50)"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="numero_licencia" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="sujeto_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_licencia_sujeto" references="sujetos_pasivos(id)"/>
+            </column>
+            <column name="predio_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_licencia_predio" references="predios(id)"/>
+            </column>
+            <column name="nombre_comercial" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="giro_clave" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="giro_descripcion" type="VARCHAR(255)"/>
+            <column name="metros_cuadrados" type="DECIMAL(10, 2)"/>
+            <column name="horario_funcionamiento" type="VARCHAR(100)"/>
+            <column name="fecha_apertura" type="DATE"/>
+            <column name="fecha_ultima_renovacion" type="DATE"/>
+            <column name="anio_fiscal_cubierto" type="INT"/>
+            <column name="estado_licencia" type="VARCHAR(50)"/>
+            <column name="numero_placa" type="VARCHAR(50)"/>
+        </createTable>
+
+        <createIndex tableName="licencias_comerciales" indexName="idx_licencia_sujeto">
+            <column name="sujeto_id"/>
+        </createIndex>
+        <createIndex tableName="licencias_comerciales" indexName="idx_licencia_predio">
+            <column name="predio_id"/>
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>
