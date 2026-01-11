@@ -1,0 +1,64 @@
+DO $$
+DECLARE
+v_sujeto_id UUID;
+v_predio_id UUID;
+BEGIN
+
+-- Insertar Sujeto Pasivo (Juan Pérez)
+INSERT INTO sujetos_pasivos (
+    id,
+    tipo_persona,
+    rfc,
+    nombre_razon_social,
+    apellido_paterno,
+    apellido_materno,
+    estatus,
+    created_at
+)
+VALUES (
+        gen_random_uuid(),
+        'FISICA',
+        'PEPJ800101XXX',
+        'Juan',
+        'Pérez',
+        'López',
+        'ACTIVO',
+        NOW())
+RETURNING id INTO v_sujeto_id;
+
+-- Insertar Predio Urbano (Casa de Juan)
+INSERT INTO predios (
+id, clave_catastral, tipo_predio, valor_catastral, area_terreno_m2,
+calle, numero_exterior, colonia_barrio, codigo_postal, estatus, created_at
+) VALUES (
+gen_random_uuid(),
+'U-100-200-300',
+'URBANO',
+1500000.00, -- Valor Catastral: $1.5 Millones
+250.00,     -- Terreno: 250 m2
+'Av. Independencia', '123', 'Centro', '68300',
+'ACTIVO', NOW()
+) RETURNING id INTO v_predio_id;
+
+-- Relacionar Predio con Sujeto (Juan es dueño)
+INSERT INTO propiedad_predios (id, sujeto_id, predio_id, tipo_relacion, porcentaje_propiedad, es_responsable_pago)
+VALUES (gen_random_uuid(), v_sujeto_id, v_predio_id, 'PROPIETARIO', 100.00, true);
+
+-- Insertar Licencia Comercial (Minisuper de Juan)
+INSERT INTO licencias_comerciales (
+id, numero_licencia, sujeto_id, predio_id, nombre_comercial,
+giro_clave, metros_cuadrados, horario_funcionamiento, estado_licencia, created_at
+) VALUES (
+gen_random_uuid(),
+'LIC-2025-001',
+v_sujeto_id,
+v_predio_id,
+'Minisuper El Rápido',
+'MINISUPER', -- Coincide con el JSON de Tarifas
+50.00,
+'08:00 - 22:00',
+'ACTIVA',
+NOW()
+);
+
+END $$;

@@ -13,23 +13,21 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Rutas públicas (Swagger, Actuator) si las necesitas
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // Todas las demás requieren autenticación
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -39,31 +37,44 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // CONVERTIDOR DE ROLES DE KEYCLOAK
-
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(new KeycloakRealmRoleConverter());
+        converter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
         return converter;
     }
 
     /**
-     * Clase interna para extraer los roles desde "realm_access" -> "roles" en el JSON del Token
+     * Convertidor capaz de leer roles de Realm y de Recurso (Cliente)
      */
-    static class KeycloakRealmRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
-        @SuppressWarnings("unchecked")
+    static class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+
+        // Nombre de tu cliente en Keycloak (según tu token: "azp": "siim-frontend")
+        private static final String RESOURCE_ID = "siim-frontend";
+
         @Override
         public Collection<GrantedAuthority> convert(Jwt jwt) {
-            final Map<String, Object> realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
+            // 1. Obtener Roles del Realm (Nivel Global)
+            // Estructura: realm_access: { roles: [...] }
+            Map<String, Object> realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
+            Collection<String> realmRoles = (realmAccess != null && realmAccess.containsKey("roles"))
+                    ? (Collection<String>) realmAccess.get("roles")
+                    : Collections.emptyList();
 
-            if (realmAccess == null || realmAccess.isEmpty()) {
-                return List.of();
+            // 2. Obtener Roles del Recurso/Cliente (Nivel Aplicación)
+            // Estructura: resource_access: { "siim-frontend": { roles: [...] } }
+            Map<String, Object> resourceAccess = (Map<String, Object>) jwt.getClaims().get("resource_access");
+            Collection<String> resourceRoles = Collections.emptyList();
+
+            if (resourceAccess != null && resourceAccess.containsKey(RESOURCE_ID)) {
+                Map<String, Object> resource = (Map<String, Object>) resourceAccess.get(RESOURCE_ID);
+                if (resource != null && resource.containsKey("roles")) {
+                    resourceRoles = (Collection<String>) resource.get("roles");
+                }
             }
 
-            Collection<String> roles = (Collection<String>) realmAccess.get("roles");
-
-            return roles.stream()
+            // 3. Combinar ambas listas y convertir a GrantedAuthority
+            return Stream.concat(realmRoles.stream(), resourceRoles.stream())
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
         }

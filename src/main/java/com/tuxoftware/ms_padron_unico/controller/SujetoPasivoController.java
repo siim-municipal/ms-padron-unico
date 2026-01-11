@@ -24,7 +24,9 @@ public class SujetoPasivoController {
     @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO')")
     @PostMapping
     public ResponseEntity<SujetoPasivoDTO> crear(@Valid @RequestBody SujetoPasivoDTO dto) {
-        return new ResponseEntity<>(service.crearCiudadano(dto), HttpStatus.CREATED);
+        SujetoPasivoDTO creado = service.crearCiudadano(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+
     }
 
     @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO', 'INSPECTOR')")
