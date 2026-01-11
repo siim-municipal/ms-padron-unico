@@ -24,6 +24,8 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
 
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+
     # Configuración de red
     networks:
       - siim-network
