@@ -17,16 +17,21 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/sujetos-pasivos")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Para desarrollo. En prod, especifica el dominio de Angular
 public class SujetoPasivoController {
     private final SujetoPasivoService service;
 
     @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO')")
     @PostMapping
     public ResponseEntity<SujetoPasivoDTO> crear(@Valid @RequestBody SujetoPasivoDTO dto) {
-        SujetoPasivoDTO creado = service.crearCiudadano(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.crearCiudadano(dto));
+    }
 
+    @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO', 'INSPECTOR')")
+    @GetMapping
+    public ResponseEntity<Page<SujetoPasivoDTO>> listar(
+            @RequestParam(required = false) String busqueda,
+            @PageableDefault(size = 20, sort = "nombreRazonSocial") Pageable pageable) {
+        return ResponseEntity.ok(service.listarTodo(busqueda, pageable));
     }
 
     @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO', 'INSPECTOR')")
@@ -35,10 +40,10 @@ public class SujetoPasivoController {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
-    @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO', 'INSPECTOR')")
-    @GetMapping
-    public ResponseEntity<Page<SujetoPasivoDTO>> listar(
-            @PageableDefault(size = 20, sort = "nombreRazonSocial") Pageable pageable) {
-        return ResponseEntity.ok(service.listarTodo(pageable));
+    @PreAuthorize("hasRole('TESORERO')") // Solo Tesorero puede dar de baja
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
+        service.eliminarCiudadano(id);
+        return ResponseEntity.noContent().build();
     }
 }
