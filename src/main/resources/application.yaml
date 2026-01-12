@@ -41,6 +41,6 @@ app:
 eureka:
   client:
     service-url:
-      defaultZone: ${URL_EUREKA:http://localhost:8761/eureka/} # Apunta a ms-discovery
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/} # Apunta a ms-discovery
   instance:
     prefer-ip-address: true # Vital para Docker
