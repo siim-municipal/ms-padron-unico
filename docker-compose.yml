@@ -25,10 +25,20 @@ services:
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
 
       - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - EUREKA_URI=${EUREKA_URI}
 
     # Configuración de red
     networks:
       - siim-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      postgres-db:
+        condition: service_healthy
 
 # Definimos la red
 networks:
