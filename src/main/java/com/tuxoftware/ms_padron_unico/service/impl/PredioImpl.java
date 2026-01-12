@@ -12,8 +12,10 @@ import com.tuxoftware.ms_padron_unico.service.PredioService;
 import jakarta.persistence.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -31,7 +33,7 @@ public class PredioImpl implements PredioService {
 
         // 1. Validar reglas de negocio
         if (predioRepository.existsByClaveCatastral(dto.getClaveCatastral())) {
-            throw new IllegalArgumentException("La clave catastral " + dto.getClaveCatastral() + " ya existe.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La clave catastral " + dto.getClaveCatastral() + " ya existe.");
         }
 
         // 2. Buscar dependencias
