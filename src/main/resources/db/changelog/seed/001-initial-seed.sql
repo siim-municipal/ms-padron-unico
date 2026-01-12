@@ -62,3 +62,19 @@ NOW()
 );
 
 END $$;
+
+-- Catálogo de Giros (Ejemplos basados en Ley de Ingresos típica)
+INSERT INTO cat_giros_comerciales
+(
+ clave,
+ descripcion,
+ requiere_licencia_alcohol,
+ activo
+) VALUES
+('ABARROTES', 'Tienda de Abarrotes sin venta de alcohol', false, true),
+('MINISUPER', 'Minisuper con venta de cerveza y licores', true, true),
+('RESTAURANTE', 'Restaurante con venta de alimentos', false, true),
+('RESTAURANTE_BAR', 'Restaurante con venta de bebidas alcohólicas', true, true),
+('FARMACIA', 'Farmacia y venta de artículos de higiene', false, true),
+('TALLER_MECANICO', 'Taller mecánico y refacciones', false, true),
+('PAPELERIA', 'Papelería y regalos', false, true);

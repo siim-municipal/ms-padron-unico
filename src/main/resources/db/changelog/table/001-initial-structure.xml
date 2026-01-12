@@ -202,4 +202,17 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="009-crear-catalogo-giros" author="Hugo Cobos">
+        <createTable tableName="cat_giros_comerciales">
+            <column name="clave" type="VARCHAR(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="descripcion" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="requiere_licencia_alcohol" type="BOOLEAN" defaultValue="false"/>
+            <column name="activo" type="BOOLEAN" defaultValue="true"/>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
