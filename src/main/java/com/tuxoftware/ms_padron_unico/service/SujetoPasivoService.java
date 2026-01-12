@@ -10,7 +10,9 @@ public interface SujetoPasivoService {
 
     SujetoPasivoDTO crearCiudadano(SujetoPasivoDTO dto);
 
-    Page<SujetoPasivoDTO> listarTodo(Pageable pageable);
+    Page<SujetoPasivoDTO> listarTodo(String busqueda, Pageable pageable);
 
     SujetoPasivoDTO buscarPorId(UUID id);
+
+    void eliminarCiudadano(UUID id);
 }
