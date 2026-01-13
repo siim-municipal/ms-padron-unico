@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -59,5 +61,13 @@ public class PredioImpl implements PredioService {
     @Override
     public List<Predio> buscarPorCercania(double lat, double lon, double radioMetros) {
         return predioRepository.buscarCercanos(lon, lat, radioMetros);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public BigDecimal obtenerValorCatastral(UUID id) {
+        return predioRepository.findById(id)
+                .map(Predio::getValorCatastral)
+                .orElseThrow(() -> new EntityNotFoundException("Predio no encontrado: " + id));
     }
 }

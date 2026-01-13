@@ -11,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/predios")
 @RequiredArgsConstructor
@@ -32,5 +35,12 @@ public class PredioController {
             @RequestParam(defaultValue = "500") double distancia) {
 
         return ResponseEntity.ok(predioService.buscarPorCercania(lat, lon, distancia));
+    }
+
+    @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO')")
+    @GetMapping("/{id}/valor-catastral")
+    public ResponseEntity<BigDecimal> obtenerValorCatastral(@PathVariable UUID id) {
+        BigDecimal valor = predioService.obtenerValorCatastral(id);
+        return ResponseEntity.ok(valor);
     }
 }
