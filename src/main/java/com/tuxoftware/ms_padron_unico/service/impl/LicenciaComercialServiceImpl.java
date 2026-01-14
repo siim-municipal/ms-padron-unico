@@ -11,12 +11,14 @@ import com.tuxoftware.ms_padron_unico.persistence.repository.LicenciaComercialRe
 import com.tuxoftware.ms_padron_unico.persistence.repository.PredioRepository;
 import com.tuxoftware.ms_padron_unico.persistence.repository.SujetoPasivoRepository;
 import com.tuxoftware.ms_padron_unico.service.LicenciaComercialService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,5 +78,28 @@ public class LicenciaComercialServiceImpl implements LicenciaComercialService {
         return licenciaRepository.findById(id)
                 .map(mapper::toDTO)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Licencia no encontrada"));
+    }
+
+    @Transactional
+    @Override
+    public void renovarVigencia(UUID licenciaId, Integer nuevoAnioFiscal) {
+        LicenciaComercial licencia = licenciaRepository.findById(licenciaId)
+                .orElseThrow(() -> new EntityNotFoundException("Licencia no encontrada: " + licenciaId));
+
+        // Validar lógica de negocio básica (opcional)
+        // Por ejemplo, no permitir 'bajar' el año si ya estaba pagado uno futuro
+        Integer anioActual = licencia.getAnioFiscalCubierto() != null ? licencia.getAnioFiscalCubierto() : 0;
+
+        if (nuevoAnioFiscal > anioActual) {
+            licencia.setAnioFiscalCubierto(nuevoAnioFiscal);
+            licencia.setFechaUltimaRenovacion(LocalDate.now());
+
+            // Si la licencia estaba SUSPENDIDA por falta de pago, la reactivamos
+            if ("SUSPENDIDA".equals(licencia.getEstadoLicencia())) {
+                licencia.setEstadoLicencia("ACTIVA");
+            }
+
+            licenciaRepository.save(licencia);
+        }
     }
 }

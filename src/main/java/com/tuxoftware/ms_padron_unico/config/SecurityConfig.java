@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.config;
 
+import jakarta.ws.rs.HttpMethod;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +35,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // Importante para permitir CORS si el Gateway no lo maneja
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/predios/*/historial-pagos").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/licencias/*/renovacion").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

@@ -14,4 +14,6 @@ public interface PredioService {
     List<Predio> buscarPorCercania(double lat, double lon, double radioMetros);
 
     BigDecimal obtenerValorCatastral(UUID id);
+
+    void actualizarUltimoPago(UUID predioId, Integer anioPagado);
 }

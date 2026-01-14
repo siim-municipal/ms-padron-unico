@@ -68,4 +68,7 @@ public class Predio extends BaseEntity {
     @Column(name = "codigo_postal")
     private String codigoPostal;
 
+    @Column(name = "ultimo_anio_pagado")
+    private Integer ultimoAnioPagado;
+
 }

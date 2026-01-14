@@ -104,6 +104,7 @@
             <column name="codigo_postal" type="VARCHAR(5)"/>
             <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="ultimo_anio_pagado" type="INT"/>
         </createTable>
 
         <sql dbms="postgresql">

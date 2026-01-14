@@ -12,6 +12,7 @@ import com.tuxoftware.ms_padron_unico.service.PredioService;
 import jakarta.persistence.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,8 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class PredioImpl implements PredioService {
+@Slf4j
+public class PredioServiceImpl implements PredioService {
     private final PredioRepository predioRepository;
     private final SujetoPasivoRepository sujetoRepository;
     private final PropiedadPredioRepository propiedadPredioRepository;
@@ -69,5 +71,25 @@ public class PredioImpl implements PredioService {
         return predioRepository.findById(id)
                 .map(Predio::getValorCatastral)
                 .orElseThrow(() -> new EntityNotFoundException("Predio no encontrado: " + id));
+    }
+
+    @Transactional
+    @Override
+    public void actualizarUltimoPago(UUID predioId, Integer anioPagado) {
+        Predio predio = predioRepository.findById(predioId)
+                .orElseThrow(() -> new RuntimeException("Predio no encontrado: " + predioId));
+
+        // Solo actualizamos si el año pagado es mayor al actual (evitar regresiones)
+        // O si estaba nulo (nunca había pagado)
+        Integer actual = predio.getUltimoAnioPagado() != null ? predio.getUltimoAnioPagado() : 0;
+
+        if (anioPagado > actual) {
+            predio.setUltimoAnioPagado(anioPagado);
+            predioRepository.save(predio);
+            log.info("Predio {} actualizado. Último año pagado: {}", predioId, anioPagado);
+        } else {
+            log.warn("Ignorando actualización de pago para predio {}. Año recibido ({}) es menor o igual al actual ({})",
+                    predioId, anioPagado, actual);
+        }
     }
 }
