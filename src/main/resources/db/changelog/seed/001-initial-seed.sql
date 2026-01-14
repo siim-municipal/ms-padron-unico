@@ -26,6 +26,27 @@ VALUES (
         NOW())
 RETURNING id INTO v_sujeto_id;
 
+-- Insertar Sujeto Pasivo (Hugo Cobos)
+INSERT INTO sujetos_pasivos (
+    id,
+    tipo_persona,
+    rfc,
+    nombre_razon_social,
+    apellido_paterno,
+    apellido_materno,
+    estatus,
+    created_at
+)
+VALUES (
+           'a1616db5-255d-4c2a-8eec-d2b490c6265a',
+           'FISICA',
+           'PEXJ800101XXX',
+           'Hugo',
+           'Cobos',
+           'Bravo',
+           'ACTIVO',
+           NOW());
+
 -- Insertar Predio Urbano (Casa de Juan)
 INSERT INTO predios (
 id, clave_catastral, tipo_predio, valor_catastral, area_terreno_m2,
@@ -39,6 +60,16 @@ gen_random_uuid(),
 'Av. Independencia', '123', 'Centro', '68300',
 'ACTIVO', NOW(), 2023
 ) RETURNING id INTO v_predio_id;
+
+INSERT INTO predios (id, clave_catastral, tipo_predio, valor_catastral, area_terreno_m2,
+                     calle, numero_exterior, colonia_barrio, codigo_postal, estatus, created_at, ultimo_anio_pagado)
+VALUES ('a1616db5-255d-4c2a-8eec-d2b490c6265b',
+        '001-TEST',
+        'URBANO',
+        1500000.00, -- Valor Catastral: $1.5 Millones
+        250.00,     -- Terreno: 250 m2
+        'Av. Independencia', '123', 'Centro', '68300',
+        'ACTIVO', NOW(), 2024);
 
 -- Relacionar Predio con Sujeto (Juan es dueño)
 INSERT INTO propiedad_predios (id, sujeto_id, predio_id, tipo_relacion, porcentaje_propiedad, es_responsable_pago)
