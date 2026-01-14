@@ -29,7 +29,7 @@ RETURNING id INTO v_sujeto_id;
 -- Insertar Predio Urbano (Casa de Juan)
 INSERT INTO predios (
 id, clave_catastral, tipo_predio, valor_catastral, area_terreno_m2,
-calle, numero_exterior, colonia_barrio, codigo_postal, estatus, created_at
+calle, numero_exterior, colonia_barrio, codigo_postal, estatus, created_at, ultimo_anio_pagado
 ) VALUES (
 gen_random_uuid(),
 'U-100-200-300',
@@ -37,7 +37,7 @@ gen_random_uuid(),
 1500000.00, -- Valor Catastral: $1.5 Millones
 250.00,     -- Terreno: 250 m2
 'Av. Independencia', '123', 'Centro', '68300',
-'ACTIVO', NOW()
+'ACTIVO', NOW(), 2023
 ) RETURNING id INTO v_predio_id;
 
 -- Relacionar Predio con Sujeto (Juan es dueño)
