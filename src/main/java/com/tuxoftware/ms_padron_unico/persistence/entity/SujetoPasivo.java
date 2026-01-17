@@ -4,9 +4,12 @@ import com.tuxoftware.ms_padron_unico.enums.TipoPersona;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -45,6 +48,9 @@ public class SujetoPasivo extends BaseEntity {
 
     @Column(name = "direccion_fiscal", columnDefinition = "TEXT")
     private String direccionFiscal;
+
+    @Column(name = "fecha_constitucion")
+    private LocalDate fechaConstitucion;
 
     // Relación Inversa (Opcional, útil para ver propiedades de una persona)
     @OneToMany(mappedBy = "sujeto", fetch = FetchType.LAZY)

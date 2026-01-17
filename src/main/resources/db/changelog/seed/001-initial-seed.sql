@@ -13,16 +13,18 @@ INSERT INTO sujetos_pasivos (
     apellido_paterno,
     apellido_materno,
     estatus,
+    fecha_constitucion,
     created_at
 )
 VALUES (
         gen_random_uuid(),
-        'FISICA',
-        'PEPJ800101XXX',
-        'Juan',
-        'Pérez',
-        'López',
+        'MORAL',
+        'CPA150820J42',
+        'CONSTRUCTORA DEL PAPALOAPAN',
+        null,
+        null,
         'ACTIVO',
+        '2015-08-20',
         NOW())
 RETURNING id INTO v_sujeto_id;
 

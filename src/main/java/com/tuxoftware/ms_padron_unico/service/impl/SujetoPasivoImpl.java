@@ -76,6 +76,11 @@ public class SujetoPasivoImpl implements SujetoPasivoService {
     }
 
     @Override
+    public boolean existePorRfc(String rfc) {
+        return repository.existsByRfc(rfc);
+    }
+
+    @Override
     @Transactional
     public void eliminarCiudadano(UUID id) {
         SujetoPasivo entidad = repository.findById(id)

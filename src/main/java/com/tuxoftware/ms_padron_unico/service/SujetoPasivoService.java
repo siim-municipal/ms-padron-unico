@@ -14,5 +14,7 @@ public interface SujetoPasivoService {
 
     SujetoPasivoDTO buscarPorId(UUID id);
 
+    boolean existePorRfc(String rfc);
+
     void eliminarCiudadano(UUID id);
 }

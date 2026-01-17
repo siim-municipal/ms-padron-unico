@@ -59,6 +59,8 @@
             <column name="telefono_movil" type="VARCHAR(20)"/>
             <column name="direccion_fiscal" type="${text_type}"/>
             <column name="estatus" type="${type_estatus_enum}" defaultValue="ACTIVO"/>
+            <column name="fecha_constitucion" type="DATE">
+                <constraints nullable="true"/> </column>
             <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>

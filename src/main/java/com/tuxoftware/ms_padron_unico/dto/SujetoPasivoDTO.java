@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.tuxoftware.ms_padron_unico.enums.TipoPersona;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -11,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -55,4 +57,8 @@ public class SujetoPasivoDTO {
 
     @Schema(description = "Domicilio fiscal completo", example = "AV. INDEPENDENCIA 100, COL. CENTRO, TUXTEPEC, OAXACA")
     private String direccionFiscal;
+
+    @Schema(description = "Fecha de constitución (Solo Morales)", example = "20-08-2015")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate fechaConstitucion;
 }

@@ -64,6 +64,18 @@ public class SujetoPasivoController {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
+    @Operation(summary = "Buscar si ya existe por RFC", description = "Retorna boolean si existe el rfc buscado.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Eliminado correctamente"),
+            @ApiResponse(responseCode = "403", description = "Permisos insuficientes (Solo TESORERO, CAJERO)")
+    })
+    @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO')")
+    @GetMapping("/existe/{rfc}")
+    public ResponseEntity<Boolean> existeRfc(@PathVariable String rfc) {
+        boolean existe = service.existePorRfc(rfc);
+        return ResponseEntity.ok(existe);
+    }
+
     @Operation(summary = "Dar de baja contribuyente (Borrado Lógico)", description = "Cambia el estatus del registro a INACTIVO. Solo el Tesorero puede realizar esta acción.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Eliminado correctamente"),
