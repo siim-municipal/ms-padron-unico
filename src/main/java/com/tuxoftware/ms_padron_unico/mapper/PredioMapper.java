@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.mapper;
 
+import com.tuxoftware.ms_padron_unico.dto.PredioDetalleDTO;
 import com.tuxoftware.ms_padron_unico.dto.RegistroPredioDTO;
 import com.tuxoftware.ms_padron_unico.persistence.entity.Predio;
 import com.tuxoftware.ms_padron_unico.persistence.entity.PropiedadPredio;
@@ -36,21 +37,33 @@ public interface PredioMapper {
     @Mapping(target = "fechaEscrituracion", expression = "java(LocalDate.now())")
     PropiedadPredio toRelacionEntity(RegistroPredioDTO dto, SujetoPasivo sujeto, Predio predio);
 
+    @Mapping(target = "latitud", source = "ubicacionCentro", qualifiedByName = "extractLat")
+    @Mapping(target = "longitud", source = "ubicacionCentro", qualifiedByName = "extractLon")
+    // Mapeo de fecha a String si es necesario
+    @Mapping(target = "fechaRegistro", expression = "java(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null)")
+    PredioDetalleDTO toDetalleDTO(Predio entity);
+
     // LÓGICA GEOESPACIAL PERSONALIZADA
 
     @Named("mapCoordinatesToPoint")
     default Point mapCoordinatesToPoint(RegistroPredioDTO dto) {
         if (dto.getLatitud() == null || dto.getLongitud() == null) {
-            return null; // Si no mandan coordenadas, guardamos null
+            return null;
         }
-
-        // Crear la factoría con SRID 4326 (WGS84 - GPS Estándar)
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-
-        // El orden estándar en GIS es (X, Y) -> (Longitud, Latitud)
-        // Latitud = Y, Longitud = X
         Coordinate coordinate = new Coordinate(dto.getLongitud(), dto.getLatitud());
-
         return geometryFactory.createPoint(coordinate);
+    }
+
+    @Named("extractLat")
+    default Double extractLat(Point point) {
+        if (point == null) return null;
+        return point.getY(); // Y es Latitud
+    }
+
+    @Named("extractLon")
+    default Double extractLon(Point point) {
+        if (point == null) return null;
+        return point.getX();
     }
 }

@@ -1,5 +1,7 @@
 package com.tuxoftware.ms_padron_unico.service.impl;
 
+import com.tuxoftware.ms_padron_unico.dto.PredioDetalleDTO;
+import com.tuxoftware.ms_padron_unico.dto.PredioListadoDTO;
 import com.tuxoftware.ms_padron_unico.dto.RegistroPredioDTO;
 import com.tuxoftware.ms_padron_unico.mapper.PredioMapper;
 import com.tuxoftware.ms_padron_unico.persistence.entity.Predio;
@@ -13,6 +15,9 @@ import jakarta.persistence.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +25,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +65,75 @@ public class PredioServiceImpl implements PredioService {
 
         return predioGuardado;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PredioDetalleDTO obtenerDetallePorId(UUID id) {
+        Predio predio = predioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Predio no encontrado"));
+
+        return predioMapper.toDetalleDTO(predio);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PredioListadoDTO> listarTodos(String busqueda, Pageable pageable) {
+
+        // 1. Crear Specification para filtrar (Búsqueda dinámica)
+        Specification<Predio> spec = (root, query, cb) -> {
+            if (busqueda == null || busqueda.isBlank()) {
+                return cb.conjunction(); // Sin filtro
+            }
+            String likePattern = "%" + busqueda.toUpperCase() + "%";
+            return cb.or(
+                    cb.like(cb.upper(root.get("claveCatastral")), likePattern),
+                    cb.like(cb.upper(root.get("coloniaBarrio")), likePattern),
+                    cb.like(cb.upper(root.get("claveAnterior")), likePattern)
+            );
+        };
+
+        // 2. Obtener la página de Entidades (Solo datos del predio)
+        Page<Predio> predioPage = predioRepository.findAll(spec, pageable);
+
+        if (predioPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // 3. Obtener los IDs de los predios encontrados en esta página
+        List<UUID> predioIds = predioPage.getContent().stream()
+                .map(Predio::getId)
+                .toList();
+
+        // 4. Buscar los dueños responsables SOLO para estos predios (Optimización N+1)
+        List<PropiedadPredio> propiedades = propiedadPredioRepository.findResponsablesPorPredioIds(predioIds);
+
+        // 5. Crear un Mapa para acceso rápido: PredioID -> Nombre Dueño
+        Map<UUID, String> mapaPropietarios = propiedades.stream()
+                .collect(Collectors.toMap(
+                        p -> p.getPredio().getId(),
+                        p -> p.getSujeto().getNombreRazonSocial() +
+                                (p.getSujeto().getApellidoPaterno() != null ? " " + p.getSujeto().getApellidoPaterno() : ""),
+                        (existente, reemplazo) -> existente // Si hay duplicados (error de datos), nos quedamos el primero
+                ));
+
+        // 6. Mapear Entity -> DTO y asignar el propietario
+        return predioPage.map(predio -> {
+            String nombrePropietario = mapaPropietarios.getOrDefault(predio.getId(), "SIN PROPIETARIO ASIGNADO");
+
+            return PredioListadoDTO.builder()
+                    .id(predio.getId())
+                    .claveCatastral(predio.getClaveCatastral())
+                    .claveAnterior(predio.getClaveAnterior())
+                    .coloniaBarrio(predio.getColoniaBarrio())
+                    .calle(predio.getCalle())
+                    .numeroExterior(predio.getNumeroExterior())
+                    .tipoPredio(predio.getTipoPredio())
+                    .ultimoAnioPagado(predio.getUltimoAnioPagado())
+                    .propietario(nombrePropietario)
+                    .build();
+        });
+    }
+
 
     @Transactional(readOnly = true)
     @Override

@@ -1,11 +1,16 @@
 package com.tuxoftware.ms_padron_unico.controller;
 
+import com.tuxoftware.ms_padron_unico.dto.PredioDetalleDTO;
+import com.tuxoftware.ms_padron_unico.dto.PredioListadoDTO;
 import com.tuxoftware.ms_padron_unico.dto.RegistroPredioDTO;
 import com.tuxoftware.ms_padron_unico.persistence.entity.Predio;
 import com.tuxoftware.ms_padron_unico.service.PredioService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -84,6 +89,36 @@ public class PredioController {
 
         BigDecimal valor = predioService.obtenerValorCatastral(id);
         return ResponseEntity.ok(valor);
+    }
+
+    @Operation(
+            summary = "Obtener detalle completo de un predio",
+            description = "Devuelve la información detallada del predio por su UUID. Incluye coordenadas formateadas."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Predio encontrado",
+                    content = @Content(schema = @Schema(implementation = PredioDetalleDTO.class))),
+            @ApiResponse(responseCode = "404", description = "El predio no existe"),
+            @ApiResponse(responseCode = "400", description = "UUID inválido")
+    })
+    @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO', 'CATASTRO')")
+    @GetMapping("/{id}")
+    public ResponseEntity<PredioDetalleDTO> obtenerPorId(
+            @Parameter(description = "UUID del predio", required = true)
+            @PathVariable UUID id) {
+
+        return ResponseEntity.ok(predioService.obtenerDetallePorId(id));
+    }
+
+    @Operation(summary = "Listar predios paginados",
+            description = "Busca por Clave o Colonia e incluye el nombre del propietario.")
+    @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO', 'CATASTRO')")
+    @GetMapping
+    public ResponseEntity<Page<PredioListadoDTO>> listarPredios(
+            @RequestParam(required = false) String busqueda,
+            @PageableDefault(sort = "claveCatastral") Pageable pageable) {
+
+        return ResponseEntity.ok(predioService.listarTodos(busqueda, pageable));
     }
 
     // Endpoint de integración (Outbox Pattern receiver)
