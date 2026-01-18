@@ -39,8 +39,12 @@ public interface PredioMapper {
 
     @Mapping(target = "latitud", source = "ubicacionCentro", qualifiedByName = "extractLat")
     @Mapping(target = "longitud", source = "ubicacionCentro", qualifiedByName = "extractLon")
-    // Mapeo de fecha a String si es necesario
+    // Fechas
     @Mapping(target = "fechaRegistro", expression = "java(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null)")
+    @Mapping(target = "lastModifiedAt", expression = "java(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null)")
+    // Usuarios
+    @Mapping(target = "createdBy", source = "createdBy")
+    @Mapping(target = "lastModifiedBy", source = "lastModifiedBy")
     PredioDetalleDTO toDetalleDTO(Predio entity);
 
     // LÓGICA GEOESPACIAL PERSONALIZADA

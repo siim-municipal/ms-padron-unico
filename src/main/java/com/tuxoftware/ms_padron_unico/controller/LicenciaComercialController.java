@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.controller;
 
+import com.tuxoftware.ms_padron_unico.dto.InfoFiscalDTO;
 import com.tuxoftware.ms_padron_unico.dto.LicenciaComercialDTO;
 import com.tuxoftware.ms_padron_unico.service.LicenciaComercialService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +23,7 @@ import java.util.UUID;
 @Tag(name = "Padrón - Licencias Comerciales", description = "Emisión, renovación y consulta de licencias de funcionamiento para establecimientos.")
 public class LicenciaComercialController {
 
-    private final LicenciaComercialService service;
+    private final LicenciaComercialService licenciaComercialService;
 
     @Operation(
             summary = "Registrar nueva Licencia",
@@ -36,7 +37,7 @@ public class LicenciaComercialController {
     @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO')")
     @PostMapping
     public ResponseEntity<LicenciaComercialDTO> crearLicencia(@Valid @RequestBody LicenciaComercialDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarLicencia(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(licenciaComercialService.registrarLicencia(dto));
     }
 
     @Operation(
@@ -52,7 +53,15 @@ public class LicenciaComercialController {
     public ResponseEntity<LicenciaComercialDTO> buscarPorPlaca(
             @Parameter(description = "Número de la placa metálica o folio visible", example = "PLC-2025-001")
             @RequestParam String placa) {
-        return ResponseEntity.ok(service.buscarPorPlaca(placa));
+        return ResponseEntity.ok(licenciaComercialService.buscarPorPlaca(placa));
+    }
+
+    @Operation(summary = "Obtener Info Fiscal (Sistema a Sistema)")
+    @GetMapping("/{id}/info-fiscal")
+    public ResponseEntity<InfoFiscalDTO> obtenerInfoLicencia(
+            @Parameter(description = "UUID de la licencia") @PathVariable UUID id) {
+
+        return ResponseEntity.ok(licenciaComercialService.obtenerInfoFiscal(id));
     }
 
     @Operation(
@@ -69,7 +78,7 @@ public class LicenciaComercialController {
             @Parameter(description = "UUID de la licencia") @PathVariable UUID licenciaId,
             @Parameter(description = "Año fiscal pagado", example = "2025") @RequestParam Integer anioFiscal) {
 
-        service.renovarVigencia(licenciaId, anioFiscal);
+        licenciaComercialService.renovarVigencia(licenciaId, anioFiscal);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.controller;
 
+import com.tuxoftware.ms_padron_unico.dto.InfoFiscalDTO;
 import com.tuxoftware.ms_padron_unico.dto.PredioDetalleDTO;
 import com.tuxoftware.ms_padron_unico.dto.PredioListadoDTO;
 import com.tuxoftware.ms_padron_unico.dto.RegistroPredioDTO;
@@ -108,6 +109,15 @@ public class PredioController {
             @PathVariable UUID id) {
 
         return ResponseEntity.ok(predioService.obtenerDetallePorId(id));
+    }
+
+    @Operation(summary = "Obtener Info Fiscal (Sistema a Sistema)",
+            description = "Endpoint ligero para validación de seguridad y base gravable. Uso exclusivo de ms-calculos.")
+    @GetMapping("/{id}/info-fiscal")
+    public ResponseEntity<InfoFiscalDTO> obtenerInfoPredio(
+            @Parameter(description = "UUID del predio") @PathVariable UUID id) {
+
+        return ResponseEntity.ok(predioService.obtenerInfoFiscal(id));
     }
 
     @Operation(summary = "Listar predios paginados",

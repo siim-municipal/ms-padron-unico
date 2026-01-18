@@ -16,6 +16,10 @@ public interface LicenciaMapper {
     @Mapping(target = "predio", source = "predio")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "fechaUltimaRenovacion", ignore = true)
+    @Mapping(target = "anioFiscalCubierto", ignore = true)
     LicenciaComercial toEntity(LicenciaComercialDTO dto, SujetoPasivo sujeto, Predio predio);
 
     @Mapping(target = "sujetoId", source = "sujeto.id")

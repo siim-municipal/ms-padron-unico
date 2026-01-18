@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.service.impl;
 
+import com.tuxoftware.ms_padron_unico.dto.InfoFiscalDTO;
 import com.tuxoftware.ms_padron_unico.dto.LicenciaComercialDTO;
 import com.tuxoftware.ms_padron_unico.mapper.LicenciaMapper;
 import com.tuxoftware.ms_padron_unico.persistence.entity.CatalogoGiro;
@@ -14,10 +15,13 @@ import com.tuxoftware.ms_padron_unico.service.LicenciaComercialService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -78,6 +82,28 @@ public class LicenciaComercialServiceImpl implements LicenciaComercialService {
         return licenciaRepository.findById(id)
                 .map(mapper::toDTO)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Licencia no encontrada"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InfoFiscalDTO obtenerInfoFiscal(UUID id) {
+        LicenciaComercial licencia = licenciaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Licencia no encontrada: " + id));
+
+        // Para licencias, la "base" suele ser los M2 del local o el monto de inversión
+        BigDecimal base = (licencia.getMetrosCuadrados() != null)
+                ? licencia.getMetrosCuadrados()
+                : BigDecimal.ZERO;
+
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String alias = jwt.getClaimAsString("municipio_id");
+
+        return new InfoFiscalDTO(
+                licencia.getId(),
+                base,
+                alias,
+                licencia.getEstatus().name()
+        );
     }
 
     @Transactional

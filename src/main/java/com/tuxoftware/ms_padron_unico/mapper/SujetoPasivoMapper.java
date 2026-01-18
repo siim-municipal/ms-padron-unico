@@ -12,21 +12,23 @@ public interface SujetoPasivoMapper {
     // Convierte de Entidad a DTO
     SujetoPasivoDTO toDTO(SujetoPasivo entity);
 
-    // Convierte de DTO a Entidad
-    // Ignoramos 'id' y auditoría al crear desde cero para que la BD los genere
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "estatus", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "propiedades", ignore = true) // Ignoramos relaciones complejas por ahora
-    SujetoPasivo toEntity(SujetoPasivoDTO dto);
-
-    // Method útil para ACTUALIZACIONES (PUT/PATCH)
-    // Actualiza una entidad existente con datos del DTO, sin sobreescribir el ID
+    // CREACIÓN
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "estatus", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "propiedades", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    SujetoPasivo toEntity(SujetoPasivoDTO dto);
+
+    // ACTUALIZACIÓN
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "estatus", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "propiedades", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
     void updateEntityFromDTO(SujetoPasivoDTO dto, @MappingTarget SujetoPasivo entity);
 }

@@ -63,6 +63,8 @@
                 <constraints nullable="true"/> </column>
             <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
         </createTable>
 
         <createIndex tableName="sujetos_pasivos" indexName="idx_sujetos_nombre">
@@ -106,6 +108,8 @@
             <column name="codigo_postal" type="VARCHAR(5)"/>
             <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
             <column name="ultimo_anio_pagado" type="INT"/>
         </createTable>
 
@@ -154,6 +158,8 @@
 
             <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
 
             <column name="ultimo_pago_fecha" type="DATE"/>
         </createTable>
@@ -171,6 +177,8 @@
             <column name="estatus" type="VARCHAR(50)"/>
             <column name="created_at" type="TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
 
             <column name="numero_licencia" type="VARCHAR(50)">
                 <constraints unique="true" nullable="false"/>

@@ -29,10 +29,13 @@ public class PredioDetalleDTO {
     private String coloniaBarrio;
     private String codigoPostal;
 
-    // ✅ Coordenadas aplanadas (Frontend Friendly)
+    // Coordenadas aplanadas
     private Double latitud;
     private Double longitud;
 
     // Metadatos
     private String fechaRegistro;
+    private String createdBy;
+    private String lastModifiedBy;
+    private String lastModifiedAt;
 }

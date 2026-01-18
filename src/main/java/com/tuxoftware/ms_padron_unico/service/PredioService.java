@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.service;
 
+import com.tuxoftware.ms_padron_unico.dto.InfoFiscalDTO;
 import com.tuxoftware.ms_padron_unico.dto.PredioDetalleDTO;
 import com.tuxoftware.ms_padron_unico.dto.PredioListadoDTO;
 import com.tuxoftware.ms_padron_unico.dto.RegistroPredioDTO;
@@ -16,6 +17,8 @@ public interface PredioService {
     Predio registrarNuevoPredio(RegistroPredioDTO dto);
 
     PredioDetalleDTO obtenerDetallePorId(UUID id);
+
+    InfoFiscalDTO obtenerInfoFiscal(UUID id);
 
     Page<PredioListadoDTO> listarTodos(String busqueda, Pageable pageable);
 

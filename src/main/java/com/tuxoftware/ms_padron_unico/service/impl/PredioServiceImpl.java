@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.service.impl;
 
+import com.tuxoftware.ms_padron_unico.dto.InfoFiscalDTO;
 import com.tuxoftware.ms_padron_unico.dto.PredioDetalleDTO;
 import com.tuxoftware.ms_padron_unico.dto.PredioListadoDTO;
 import com.tuxoftware.ms_padron_unico.dto.RegistroPredioDTO;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -73,6 +76,23 @@ public class PredioServiceImpl implements PredioService {
                 .orElseThrow(() -> new EntityNotFoundException("Predio no encontrado"));
 
         return predioMapper.toDetalleDTO(predio);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InfoFiscalDTO obtenerInfoFiscal(UUID id) {
+        Predio predio = predioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Predio no encontrado: " + id));
+
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String alias = jwt.getClaimAsString("municipio_id");
+
+        return new InfoFiscalDTO(
+                predio.getId(),
+                predio.getValorCatastral(), // Base gravable
+                alias,    // Vital para Tenant Isolation
+                predio.getEstatus().name()
+        );
     }
 
     @Override
