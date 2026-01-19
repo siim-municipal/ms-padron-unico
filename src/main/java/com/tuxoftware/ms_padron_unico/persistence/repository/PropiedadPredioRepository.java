@@ -1,5 +1,6 @@
 package com.tuxoftware.ms_padron_unico.persistence.repository;
 
+import com.tuxoftware.ms_padron_unico.dto.PropietarioDTO;
 import com.tuxoftware.ms_padron_unico.persistence.entity.PropiedadPredio;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,10 @@ public interface PropiedadPredioRepository extends JpaRepository<PropiedadPredio
             "JOIN FETCH pp.sujeto " +
             "WHERE pp.predio.id IN :predioIds AND pp.esResponsablePago = true")
     List<PropiedadPredio> findResponsablesPorPredioIds(@Param("predioIds") List<UUID> predioIds);
+
+    @Query("SELECT new com.tuxoftware.ms_padron_unico.dto.PropietarioDTO(" +
+            "p.sujeto.id, p.sujeto.nombreRazonSocial, " +
+            "p.sujeto.apellidoPaterno, p.sujeto.apellidoMaterno, p.sujeto.rfc, p.esResponsablePago) " +
+            "FROM PropiedadPredio p WHERE p.predio.id = :predioId")
+    List<PropietarioDTO> findResumenByPredioId(@Param("predioId") UUID predioId);
 }
