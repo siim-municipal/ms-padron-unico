@@ -26,5 +26,7 @@ public interface PredioService {
 
     BigDecimal obtenerValorCatastral(UUID id);
 
+    Boolean existePredioPorId(UUID id);
+
     void actualizarUltimoPago(UUID predioId, Integer anioPagado);
 }

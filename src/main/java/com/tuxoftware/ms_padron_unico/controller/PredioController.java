@@ -111,6 +111,25 @@ public class PredioController {
         return ResponseEntity.ok(predioService.obtenerDetallePorId(id));
     }
 
+    @Operation(
+            summary = "Obtener detalle completo de un predio",
+            description = "Devuelve la información detallada del predio por su UUID. Incluye coordenadas formateadas."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Predio encontrado",
+                    content = @Content(schema = @Schema(implementation = PredioDetalleDTO.class))),
+            @ApiResponse(responseCode = "404", description = "El predio no existe"),
+            @ApiResponse(responseCode = "400", description = "UUID inválido")
+    })
+    @PreAuthorize("hasAnyRole('TESORERO', 'CAJERO', 'CATASTRO')")
+    @GetMapping("/{id}/exists")
+    public ResponseEntity<Boolean> exists(
+            @Parameter(description = "UUID del predio", required = true)
+            @PathVariable UUID id) {
+
+        return ResponseEntity.ok(predioService.existePredioPorId(id));
+    }
+
     @Operation(summary = "Obtener Info Fiscal (Sistema a Sistema)",
             description = "Endpoint ligero para validación de seguridad y base gravable. Uso exclusivo de ms-calculos.")
     @GetMapping("/{id}/info-fiscal")

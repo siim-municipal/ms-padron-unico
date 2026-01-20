@@ -169,6 +169,11 @@ public class PredioServiceImpl implements PredioService {
                 .orElseThrow(() -> new EntityNotFoundException("Predio no encontrado: " + id));
     }
 
+    @Override
+    public Boolean existePredioPorId(UUID id) {
+        return predioRepository.findById(id).isPresent();
+    }
+
     @Transactional
     @Override
     public void actualizarUltimoPago(UUID predioId, Integer anioPagado) {
